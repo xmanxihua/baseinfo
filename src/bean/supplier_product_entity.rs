@@ -1,6 +1,8 @@
-use chrono::{DateTime, NaiveDateTime};
-use sea_orm::prelude::{DateTimeWithTimeZone, Decimal, Json};
+use chrono::NaiveDateTime;
+use sea_orm::prelude::{Decimal, Json};
 use serde::{Deserialize, Serialize};
+
+use crate::utils::option_date_format;
 
 #[derive(Debug,Deserialize,Serialize)]
 pub struct SupplierProductEntity {
@@ -19,8 +21,8 @@ pub struct SupplierProductEntity {
     pub create_by: Option<String>,
     #[serde(rename="updateBy")]
     pub update_by: Option<String>,
-    #[serde(rename="createTime")]
+    #[serde(rename="createTime", with="option_date_format")]
     pub create_time: Option<NaiveDateTime>,
-    #[serde(rename="updateTime")]
+    #[serde(rename="updateTime",with="option_date_format")]
     pub update_time: Option<NaiveDateTime>,
 }
