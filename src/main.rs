@@ -3,6 +3,7 @@ mod entity;
 mod controller;
 mod service;
 mod utils;
+mod dao;
 
 use axum::{
     routing::get,
@@ -15,7 +16,9 @@ use crate::entity::supplier;
 use sea_orm::EntityTrait;
 use sea_orm::ColumnTrait;
 use tracing_subscriber::EnvFilter;
+use crate::bean::app_state_dyn::AppStateDyn;
 use crate::controller::supplier_controller::SupplierController;
+use crate::dao::supplier_repo::SupplierRepo;
 
 #[tokio::main]
 async fn main() {
@@ -30,7 +33,7 @@ async fn main() {
     //     .add_directive("sea_orm::driver=debug".parse().unwrap())
     //     //关闭sqlx自带的日志
     //     .add_directive("sqlx::query=off".parse().unwrap());
-    // let db = Database::connect("postgres://postgres:micun_db@0415@10.0.2.251:5432/baseinfo").await.unwrap();
+    let db = Database::connect("postgres://postgres:micun_db@0415@10.0.2.251:5432/baseinfo").await.unwrap();
     //
     // let supplier = SupplierDao::find_by_id(67).one(&db).await.unwrap();
     // match supplier {
@@ -61,9 +64,16 @@ async fn main() {
 
     // println!("分页查询: {:?}", list);
     // build our application with a single route
+    let supplier_repo = SupplierRepo {
+        db: &db
+    };
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/baseinfo/supplier/submit",post(SupplierController::submit))
+        .route("/baseinfo/supplier/submit", post(SupplierController::submit))
+        .with_state(AppStateDyn {
+            db,
+            supplier_repo: &supplier_repo,
+        })
         ;
 
     // run our app with hyper, listening globally on port 3000
