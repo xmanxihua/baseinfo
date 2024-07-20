@@ -1,8 +1,10 @@
 use sea_orm::DatabaseConnection;
-use crate::dao::supplier_repo::SupplierRepo;
+use crate::repository::supplier_repo::SupplierRepo;
+
 
 #[derive(Clone)]
-pub struct AppStateDyn<'a> {
+pub struct AppStateDyn
+{
     pub db: DatabaseConnection,
-    pub supplier_repo: &'a SupplierRepo<'a>,
+    pub supplier_repo: SupplierRepo,
 }
