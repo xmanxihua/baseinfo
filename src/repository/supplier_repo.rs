@@ -7,15 +7,15 @@ use crate::dao::supplier;
 use crate::dao::supplier::ActiveModel;
 
 #[derive(Clone)]
-pub struct SupplierRepo {
-    pub db: DatabaseConnection,
+pub struct SupplierRepo<'a> {
+    pub db: &'a DatabaseConnection,
 }
 
-impl SupplierRepo {
+impl <'a> SupplierRepo<'a> {
     pub async fn update(&self, supplier: SupplierEntity) -> Result<i32, DbErr> {
         if let Some(id) = supplier.id {
             SupplierDao::update(Self::adapt(supplier)).filter(supplier::Column::Id.eq(id))
-                .exec(&self.db).await.map(|r| 1)
+                .exec(self.db).await.map(|r| 1)
         } else {
             Result::Err(DbErr::Custom("id is None".into()))
         }
@@ -50,14 +50,14 @@ impl SupplierRepo {
     }
 
     pub async fn insert(&self, supplier: SupplierEntity) -> Result<i32, DbErr> {
-        SupplierDao::insert(Self::adapt(supplier)).exec(&self.db).await.map(|r| {
+        SupplierDao::insert(Self::adapt(supplier)).exec(self.db).await.map(|r| {
             r.last_insert_id
         })
     }
     pub async fn query_by_code(&self, supplier_code: String) -> Result<Option<SupplierVo>, DbErr> {
         let result = SupplierDao::find()
             .filter(supplier::Column::SupplierCode.eq(supplier_code))
-            .one(&self.db).await
+            .one(self.db).await
             .and_then(|m| {
                 match m {
                     None => Ok(None),

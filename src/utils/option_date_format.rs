@@ -45,28 +45,7 @@ where
         }
 
 
-        // fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        //     formatter
-        //         .write_str("a string representing a date and time in the format %Y-%m-%d %H:%M:%S")
-        // }
-        //
-        // fn visit_none<E>(self) -> Result<Self::Value, E> where E: Error {
-        //     todo!()
-        // }
-        // fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error> where D: Deserializer<'de> {
-        //
-        //          return NaiveDateTime::parse_from_str(, FORMAT)
-        //              .map_err(de::Error::custom)
-        //              .map(|y| Some(y));
-        // }
-        // fn visit_some<E>(self, value: &str) -> Result<Option<NaiveDateTime>, E>
-        // where
-        //     E: de::Error,
-        // {
-        //     return NaiveDateTime::parse_from_str(value, FORMAT)
-        //         .map_err(de::Error::custom)
-        //         .map(|y| Some(y));
-        // }
+
     }
 
     deserializer.deserialize_option(CustomDateVisitor)

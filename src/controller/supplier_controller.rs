@@ -1,4 +1,5 @@
 use axum::extract::{Json, State};
+use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 
 use crate::bean::app_state_dyn::AppStateDyn;
@@ -13,23 +14,41 @@ pub struct Test {
 }
 
 impl SupplierController {
-    pub async fn submit(State(state): State<AppStateDyn>, Json(supplier_vo): Json<SupplierVo>) -> Json<JsonResult<SupplierVo>> {
-        let string = serde_json::to_string(&supplier_vo).unwrap();
-        let s = string.as_str();
-        println!("{:?}", string);
+    pub async fn submit<'a>(
+        State(state): State<AppStateDyn<'a>>,
+        Json(supplier_vo): Json<SupplierVo>,
+    ) -> Json<JsonResult<SupplierVo>> {
+        let supplier_code = supplier_vo.supplier_code.as_ref().map(|x| x.clone());
 
-        let r = state.supplier_repo.query_by_code(supplier_vo.supplier_code.unwrap()).await;
+        let r = state.supplier_service.submit(supplier_vo).await;
         match r {
-            Ok(x) => return Json(JsonResult {
-                data: x,
-                code: 0,
-                msg: None,
-            }),
+            Ok(id) => {}
+            Err(e) => {
+                return Json(JsonResult {
+                    data: None,
+                    code: -1,
+                    msg: Some(e.to_string()),
+                })
+            }
+        };
+
+        let r = state
+            .supplier_repo
+            .query_by_code(supplier_code.unwrap())
+            .await;
+        match r {
+            Ok(x) => {
+                return Json(JsonResult {
+                    data: x,
+                    code: 0,
+                    msg: None,
+                })
+            }
             Err(e) => Json(JsonResult {
                 data: None,
                 code: -1,
                 msg: Some(e.to_string()),
-            })
+            }),
         }
     }
 }
