@@ -15,7 +15,7 @@ pub struct SupplierProductEntity {
     pub grade: Option<i16>,
     pub description: Option<String>,
     pub ext: Option<Json>,
-    #[serde(rename="dataState")]
+    #[serde(rename="data_state")]
     pub data_state: Option<i16>,
     #[serde(rename="createBy")]
     pub create_by: Option<String>,

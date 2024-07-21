@@ -7,3 +7,4 @@ pub mod supplier_entity;
 pub mod attachment;
 pub mod supplier_param;
 pub mod supplier_account_entity;
+pub mod supplier_account_param;

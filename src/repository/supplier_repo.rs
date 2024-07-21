@@ -92,7 +92,7 @@ impl<'a> SupplierRepo<'a> {
         //     return Lists.newArrayList();
         // }
         // Map<String, SupplierAccountEntity> contactMap = supplierAccountRepository.queryList(SupplierAccountParam.builder()
-        //                                                                                         .supplierCodes(list.stream().map(Supplier::getSupplierCode).distinct().collect(Collectors.toList()))
+        //                                                                                         .supplier_codes(list.stream().map(Supplier::getSupplierCode).distinct().collect(Collectors.toList()))
         //                                                                                         .type(SupplierConstants.AccountType.CONTACT_PERSON.getType())
         //     .build())
         // .stream().collect(Collectors.toMap(SupplierAccountEntity::getSupplierCode, Function.identity()));
@@ -167,7 +167,7 @@ impl<'a> SupplierRepo<'a> {
         }
 
         if let Some(x) = supplier_param.supplier_name_like {
-            select = select.filter(supplier::Column::SupplierName.like("%".into() + x + "%".into()));
+            select = select.filter(supplier::Column::SupplierName.contains(x));
         }
         if let Some(x) = supplier_param.supplier_name {
             select = select.filter(supplier::Column::SupplierName.eq(x));

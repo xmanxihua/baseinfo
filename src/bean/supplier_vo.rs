@@ -26,7 +26,7 @@ pub struct SupplierVo {
     #[serde(rename = "signContract")]
     pub sign_contract: Option<bool>,
     pub ext: Option<SupplierExt>,
-    #[serde(rename = "dataState")]
+    #[serde(rename = "data_state")]
     pub data_state: Option<i16>,
     #[serde(rename = "createBy")]
     pub create_by: Option<String>,

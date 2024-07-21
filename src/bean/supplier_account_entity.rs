@@ -16,7 +16,7 @@ pub struct SupplierAccountEntity {
     pub name: Option<String>,
     pub comment: Option<String>,
     pub ext: Option<SupplierAccountExt>,
-    #[serde(rename = "dataState")]
+    #[serde(rename = "data_state")]
     pub data_state: Option<i16>,
     #[serde(rename = "createBy")]
     pub create_by: Option<String>,
