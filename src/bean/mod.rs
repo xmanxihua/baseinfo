@@ -5,3 +5,5 @@ pub mod json_result;
 pub mod app_state_dyn;
 pub mod supplier_entity;
 pub mod attachment;
+pub mod supplier_param;
+pub mod supplier_account_entity;
