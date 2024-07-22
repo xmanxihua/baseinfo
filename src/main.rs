@@ -34,16 +34,29 @@ async fn main() {
         .add_directive("sqlx::query=off".parse().unwrap());
 
     let db: &'static DatabaseConnection = get_db().await;
+    unsafe {
+        let holder = Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection);
+    }
 
-    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db: &db }));
+    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db }));
+    unsafe {
+        let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
+    }
 
     let supplier_account_repo: &'static SupplierAccountRepo =
-        Box::leak(Box::new(SupplierAccountRepo { db: &db }));
+        Box::leak(Box::new(SupplierAccountRepo { db }));
+    unsafe {
+        let holder = Box::from_raw(supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo);
+    }
 
     let supplier_service: &'static SupplierService = Box::leak(Box::new(SupplierService {
         supplier_repo: &supplier_repo,
-        db: &db,
+        db,
     }));
+    unsafe {
+        let holder = Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService);
+    }
+
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route(
@@ -51,7 +64,7 @@ async fn main() {
             post(SupplierController::submit),
         )
         .with_state(AppStateDyn {
-            db: &db,
+            db,
             supplier_repo: &supplier_repo,
             supplier_service: &supplier_service,
         });

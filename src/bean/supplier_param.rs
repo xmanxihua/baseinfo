@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SupplierParam {
     pub supplier_name: Option<String>,
 

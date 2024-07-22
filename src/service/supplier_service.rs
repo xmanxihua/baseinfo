@@ -3,6 +3,7 @@ use crate::bean::supplier_vo::SupplierVo;
 use crate::repository::supplier_repo::SupplierRepo;
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 use crate::{constants, utils};
+use crate::bean::supplier_param::SupplierParam;
 
 #[derive(Clone)]
 pub struct SupplierService<'a> {
@@ -41,8 +42,11 @@ impl<'a> SupplierService<'a> {
     //
     // }
     fn submit_verify(supplier_entity: SupplierEntity) -> Result<(), String> {
-        utils::m_assert::not_blank(supplier_entity.supplier_name.as_ref().map(|x| x.as_str()), format_args!("供应商名称不能为空", ))?;
-        
+        utils::m_assert::not_blank(supplier_entity.supplier_name.as_ref().map(|x| x.as_str()), format_args!("供应商名称不能为空"))?;
+        let supplier_param = SupplierParam {
+            supplier_name: supplier_entity.supplier_name.clone(),
+            ..SupplierParam::default()
+        };
         Ok(())
     }
 }
