@@ -1,4 +1,6 @@
+use crate::bean::page_request::{Page, PageRequest};
 use std::collections::HashSet;
+use crate::impl_page_request;
 
 #[derive(Debug, Default)]
 pub struct SupplierParam {
@@ -29,4 +31,8 @@ pub struct SupplierParam {
     pub data_states: Option<HashSet<i16>>,
 
     pub data_state: Option<i16>,
+
+    pub page: Option<Page>,
 }
+
+impl_page_request!(SupplierParam);
