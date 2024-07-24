@@ -38,15 +38,17 @@ async fn main() {
         let holder = Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection);
     }
 
-    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db }));
-    unsafe {
-        let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
-    }
+
 
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
     unsafe {
         let holder = Box::from_raw(supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo);
+    }
+
+    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db , supplier_account_repo}));
+    unsafe {
+        let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
     }
 
     let supplier_service: &'static SupplierService = Box::leak(Box::new(SupplierService {

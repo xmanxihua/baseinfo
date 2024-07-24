@@ -36,10 +36,10 @@ macro_rules! impl_page_request {
             }
 
             fn limit(&self) -> Option<u32> {
-                if let Some(ref page) = self.page
-                }
-                None{
+                if let Some(ref page) = self.page {
                     return page.limit();
+                }
+                None
             }
         }
     };

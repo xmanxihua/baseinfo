@@ -1,6 +1,9 @@
+use crate::bean::page_request::Page;
+use crate::bean::page_request::PageRequest;
+use crate::impl_page_request;
 use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SupplierAccountParam {
     pub supplier_codes: Option<Vec<String>>,
 
@@ -13,7 +16,7 @@ pub struct SupplierAccountParam {
     pub data_states: Option<HashSet<i32>>,
     pub data_state: Option<i32>,
 
-    pub offset: Option<i32>,
-
-    pub limit: Option<i32>,
+    pub page: Option<Page>,
 }
+
+impl_page_request!(SupplierAccountParam);

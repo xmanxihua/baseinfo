@@ -8,6 +8,7 @@ use sea_orm::{
     ColumnTrait, DatabaseConnection, DbErr, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect,
     QueryTrait,
 };
+use crate::bean::page_request::PageRequest;
 
 #[derive(Debug)]
 pub struct SupplierAccountRepo<'a> {
@@ -23,28 +24,28 @@ impl <'a> SupplierAccountRepo<'a> {
             .apply_if(supplier_account_param.data_state, |mut select, x| {
                 select.filter(supplier_account::Column::DataState.eq(x))
             })
-            .apply_if(supplier_account_param.data_states, |mut select, x| {
-                select.filter(supplier_account::Column::DataState.is_in(x))
+            .apply_if(supplier_account_param.data_states.as_ref(), |mut select, x| {
+                select.filter(supplier_account::Column::DataState.is_in(x.clone()))
             })
-            .apply_if(supplier_account_param.offset, |mut select, x| {
+            .apply_if(supplier_account_param.offset(), |mut select, x| {
                 select.offset(x as u64)
             })
             .apply_if(
-                supplier_account_param.supplier_code_not_in,
-                |mut select, x| select.filter(supplier_account::Column::SupplierCode.is_not_in(x)),
+                supplier_account_param.supplier_code_not_in.as_ref(),
+                |mut select, x| select.filter(supplier_account::Column::SupplierCode.is_not_in(x.clone())),
             )
-            .apply_if(supplier_account_param.supplier_codes, |mut select, x| {
+            .apply_if(supplier_account_param.supplier_codes.clone(), |mut select, x| {
                 select.filter(supplier_account::Column::SupplierCode.is_in(x))
             })
             .apply_if(supplier_account_param.r#type, |mut select, x| {
                 let e = Expr::cust(format!("type @> '{}'", x));
                 select.filter(e)
             })
-            .apply_if(supplier_account_param.types, |mut select, x| {
+            .apply_if(supplier_account_param.types.clone(), |mut select, x| {
                 let e = Expr::cust(format!("type @> '{:?}'", x));
                 select.filter(e)
             })
-            .apply_if(supplier_account_param.limit, |mut select, x| {
+            .apply_if(supplier_account_param.limit(), |mut select, x| {
                 select.limit(x as u64)
             });
 
