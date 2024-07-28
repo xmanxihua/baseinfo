@@ -5,11 +5,15 @@ use crate::repository::supplier_account_repo::SupplierAccountRepo;
 use crate::repository::supplier_repo::SupplierRepo;
 use crate::service::supplier_service::SupplierService;
 use axum::routing::post;
-use axum::{routing::get, Router};
+use axum::{routing::get, Router, middleware};
+use axum::http::StatusCode;
 use sea_orm::EntityTrait;
 use sea_orm::{ColumnTrait, DatabaseConnection};
 use sea_orm::{Database, PaginatorTrait, QueryFilter};
 use tracing_subscriber::EnvFilter;
+use axum::extract::{FromRequest, FromRequestParts, Request};
+use axum::middleware::Next;
+use axum::response::IntoResponse;
 
 mod bean;
 mod constants;
@@ -39,14 +43,13 @@ async fn main() {
     }
 
 
-
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
     unsafe {
         let holder = Box::from_raw(supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo);
     }
 
-    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db , supplier_account_repo}));
+    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db, supplier_account_repo }));
     unsafe {
         let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
     }
@@ -69,7 +72,7 @@ async fn main() {
             db,
             supplier_repo: &supplier_repo,
             supplier_service: &supplier_service,
-        });
+        }).layer(middleware::from_fn(auth_middleware));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -81,4 +84,20 @@ async fn get_db() -> &'static mut DatabaseConnection {
             .unwrap(),
     );
     Box::leak(db)
+}
+
+
+async fn auth_middleware(req: Request, next: Next) -> Result<impl IntoResponse, StatusCode> {
+    let headers = req.headers();
+
+    req.body().
+    if let Some(satoken) = headers.get("satoken") {
+        if satoken.is_empty(){
+            Err(StatusCode::UNAUTHORIZED)
+        } else {
+            Ok(next.run(req).await)
+        }
+    } else if let Some(satoken) = req. {
+        Err(StatusCode::UNAUTHORIZED)
+    }
 }

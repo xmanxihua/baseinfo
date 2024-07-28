@@ -53,7 +53,8 @@ impl<'a> SupplierAccountRepo<'a> {
                 let co = supplier_account::Column::from_str(sort.field.as_ref())
                     .map_err(|e| DbErr::Custom(e.to_string()))?;
 
-                select = select.order_by(co,Order::Asc)
+                let order: Order = sort.direction.clone().into();
+                select = select.order_by(co, order)
             }
         };
 

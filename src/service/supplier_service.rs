@@ -50,13 +50,14 @@ impl<'a> SupplierService<'a> {
         )?;
         let mut supplier_param = SupplierParam {
             supplier_name: supplier_entity.supplier_name.clone(),
+            page:Some(Page {
+                page_size:1,
+                page_no:1,
+                sorts:vec![]
+            }),
             ..SupplierParam::default()
         };
-        supplier_param.page = Some(Page {
-            page_size: 1,
-            page_no: 1,
-            sorts:vec![]
-        });
+
         if let Some(id) = supplier_entity.id {
             supplier_param.id_not_in = Some(vec![id]);
         }

@@ -1,4 +1,5 @@
-use sea_orm::DeriveValueType;
+use std::str::FromStr;
+use sea_orm::{DeriveValueType, Order};
 
 pub trait PageRequest {
     fn offset(&self) -> Option<u32>;
@@ -17,6 +18,34 @@ pub struct Page {
 pub struct Sort {
     pub field: String,
     pub direction: SortDirection,
+}
+
+
+#[derive(Clone, Debug)]
+pub enum SortDirection {
+    ASC,
+    DESC,
+}
+
+impl FromStr for SortDirection {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "asc" => Ok(SortDirection::ASC),
+            "desc" => Ok(SortDirection::DESC),
+            _ => Err("错误的排序类型".into())
+        }
+    }
+}
+
+impl Into<Order> for SortDirection {
+    fn into(self) -> Order {
+        match self {
+            SortDirection::ASC => Order::Asc,
+            SortDirection::DESC => Order::Desc
+        }
+    }
 }
 
 impl PageRequest for Page {
