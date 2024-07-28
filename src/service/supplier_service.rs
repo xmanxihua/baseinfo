@@ -5,6 +5,7 @@ use crate::bean::supplier_vo::SupplierVo;
 use crate::repository::supplier_repo::SupplierRepo;
 use crate::{constants, utils};
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
+use serde::de::IntoDeserializer;
 
 #[derive(Clone)]
 pub struct SupplierService<'a> {
@@ -58,10 +59,12 @@ impl<'a> SupplierService<'a> {
         if let Some(id) = supplier_entity.id {
             supplier_param.id_not_in = Some(vec![id]);
         }
-        self.supplier_repo
+        if !self.supplier_repo
             .query_list(supplier_param)
             .await
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| e.to_string())?.is_empty() {
+            return Err("供货商名称已经存在".into());
+        }
         Ok(())
     }
 }
