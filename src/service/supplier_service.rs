@@ -54,6 +54,7 @@ impl<'a> SupplierService<'a> {
         supplier_param.page = Some(Page {
             page_size: 1,
             page_no: 1,
+            sorts:vec![]
         });
         if let Some(id) = supplier_entity.id {
             supplier_param.id_not_in = Some(vec![id]);

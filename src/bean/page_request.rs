@@ -1,13 +1,22 @@
+use sea_orm::DeriveValueType;
+
 pub trait PageRequest {
     fn offset(&self) -> Option<u32>;
 
     fn limit(&self) -> Option<u32>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Page {
     pub page_size: u32,
     pub page_no: u32,
+    pub sorts: Vec<Sort>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Sort {
+    pub field: String,
+    pub direction: SortDirection,
 }
 
 impl PageRequest for Page {
@@ -29,14 +38,14 @@ macro_rules! impl_page_request {
     ($name:ident) => {
         impl PageRequest for $name {
             fn offset(&self) -> Option<u32> {
-                if let Some(ref page) = self.page {
+                if let Some(page) = self.page.clone() {
                     return page.offset();
                 }
                 None
             }
 
             fn limit(&self) -> Option<u32> {
-                if let Some(ref page) = self.page {
+                if let Some(page) = self.page.clone() {
                     return page.limit();
                 }
                 None
