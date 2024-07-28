@@ -1,19 +1,31 @@
+use std::io::Read;
+use std::ops::{Deref, DerefMut};
+use std::ptr::null;
+use std::str::Chars;
+
+use axum::extract::{FromRequest, FromRequestParts, Query, Request};
+use axum::http::StatusCode;
+use axum::middleware::Next;
+use axum::response::IntoResponse;
+use axum::routing::post;
+use axum::{middleware, routing::get, Router};
+use chrono::Utc;
+use md5::{compute, Digest};
+use rand::{Rng, RngCore};
+use reqwest::{Client, Error, Response};
+use sea_orm::EntityTrait;
+use sea_orm::{ColumnTrait, DatabaseConnection};
+use sea_orm::{Database, PaginatorTrait, QueryFilter};
+use serde::Deserialize;
+use tracing_subscriber::EnvFilter;
+
 use crate::bean::app_state_dyn::AppStateDyn;
 use crate::controller::supplier_controller::SupplierController;
 use crate::dao::prelude::Supplier;
 use crate::repository::supplier_account_repo::SupplierAccountRepo;
 use crate::repository::supplier_repo::SupplierRepo;
 use crate::service::supplier_service::SupplierService;
-use axum::routing::post;
-use axum::{routing::get, Router, middleware};
-use axum::http::StatusCode;
-use sea_orm::EntityTrait;
-use sea_orm::{ColumnTrait, DatabaseConnection};
-use sea_orm::{Database, PaginatorTrait, QueryFilter};
-use tracing_subscriber::EnvFilter;
-use axum::extract::{FromRequest, FromRequestParts, Request};
-use axum::middleware::Next;
-use axum::response::IntoResponse;
+use crate::sso::bean::UserDetailResult;
 
 mod bean;
 mod constants;
@@ -21,6 +33,7 @@ mod controller;
 mod dao;
 mod repository;
 mod service;
+mod sso;
 mod utils;
 
 #[tokio::main]
@@ -42,14 +55,18 @@ async fn main() {
         let holder = Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection);
     }
 
-
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
     unsafe {
-        let holder = Box::from_raw(supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo);
+        let holder = Box::from_raw(
+            supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo,
+        );
     }
 
-    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo { db, supplier_account_repo }));
+    let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo {
+        db,
+        supplier_account_repo,
+    }));
     unsafe {
         let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
     }
@@ -59,7 +76,8 @@ async fn main() {
         db,
     }));
     unsafe {
-        let holder = Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService);
+        let holder =
+            Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService);
     }
 
     let app = Router::new()
@@ -72,7 +90,8 @@ async fn main() {
             db,
             supplier_repo: &supplier_repo,
             supplier_service: &supplier_service,
-        }).layer(middleware::from_fn(auth_middleware));
+        })
+        .layer(middleware::from_fn(auth_middleware));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -86,18 +105,45 @@ async fn get_db() -> &'static mut DatabaseConnection {
     Box::leak(db)
 }
 
+#[derive(Debug, Deserialize)]
+struct Params {
+    satoken: String,
+}
 
 async fn auth_middleware(req: Request, next: Next) -> Result<impl IntoResponse, StatusCode> {
-    let headers = req.headers();
-
-    req.body().
-    if let Some(satoken) = headers.get("satoken") {
-        if satoken.is_empty(){
-            Err(StatusCode::UNAUTHORIZED)
+    let (mut parts, body) = req.into_parts();
+    if let Some(satoken) = parts.headers.get("satoken") {
+        if satoken.is_empty() {
+            let params = Query::<Params>::from_request_parts(&mut parts, &())
+                .await
+                .map_err(|e| StatusCode::UNAUTHORIZED)?;
+            if params.satoken.is_empty() {
+                return Err(StatusCode::UNAUTHORIZED);
+            }
         } else {
-            Ok(next.run(req).await)
         }
-    } else if let Some(satoken) = req. {
-        Err(StatusCode::UNAUTHORIZED)
     }
+
+    let params = Query::<Params>::from_request_parts(&mut parts, &())
+        .await
+        .map_err(|e| StatusCode::UNAUTHORIZED)?;
+    if params.satoken.is_empty() {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+
+    // Map<String, Object> paramMap = new HashMap<>();
+    // paramMap.put("apiType", "userToken");
+    // paramMap.put("apiValue", token);
+    //
+    // // 发起请求
+    // UserDetailResult userDetailResult = JsonUtil.of((String) SaSsoUtil.getData(paramMap), UserDetailResult.class);
+    // if (Objects.isNull(userDetailResult) || !userDetailResult.getCode().equals(SaResult.CODE_SUCCESS)) {
+    //     return null;
+    // }
+    //secret 2VWGTBJKDynjxM5TMUxKLw4kQbMDfWZB
+
+    let req = Request::from_parts(parts, body);
+    Ok(next.run(req))
 }
+
+
