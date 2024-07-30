@@ -1,15 +1,24 @@
 use std::ops::DerefMut;
-
+use std::sync::Arc;
+use std::time::Duration;
 use axum::http::StatusCode;
 use chrono::Utc;
+use lazy_static::lazy_static;
 use md5::compute;
 use rand::Rng;
 use reqwest::Client;
 
 use crate::sso::bean::{UserDetail, UserDetailResult};
 
+
+lazy_static!(
+    pub static ref client:Arc<Client> = Arc::new(
+        Client::builder().connect_timeout(Duration::from_secs(30))
+        .build().expect("初始化reqwest client失败")
+    );
+);
+
 pub async fn query_user_detail(satoken: &str) -> Result<UserDetail, StatusCode> {
-    let client = Client::new();
     let mut get_data_param = vec![
         ("apiType", "userToken"),
         ("apiValue", satoken),

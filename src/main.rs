@@ -110,40 +110,6 @@ struct Params {
     satoken: String,
 }
 
-async fn auth_middleware(req: Request, next: Next) -> Result<impl IntoResponse, StatusCode> {
-    let (mut parts, body) = req.into_parts();
-    if let Some(satoken) = parts.headers.get("satoken") {
-        if satoken.is_empty() {
-            let params = Query::<Params>::from_request_parts(&mut parts, &())
-                .await
-                .map_err(|e| StatusCode::UNAUTHORIZED)?;
-            if params.satoken.is_empty() {
-                return Err(StatusCode::UNAUTHORIZED);
-            }
-        } else {
-        }
-    }
 
-    let params = Query::<Params>::from_request_parts(&mut parts, &())
-        .await
-        .map_err(|e| StatusCode::UNAUTHORIZED)?;
-    if params.satoken.is_empty() {
-        return Err(StatusCode::UNAUTHORIZED);
-    }
-
-    // Map<String, Object> paramMap = new HashMap<>();
-    // paramMap.put("apiType", "userToken");
-    // paramMap.put("apiValue", token);
-    //
-    // // 发起请求
-    // UserDetailResult userDetailResult = JsonUtil.of((String) SaSsoUtil.getData(paramMap), UserDetailResult.class);
-    // if (Objects.isNull(userDetailResult) || !userDetailResult.getCode().equals(SaResult.CODE_SUCCESS)) {
-    //     return null;
-    // }
-    //secret 2VWGTBJKDynjxM5TMUxKLw4kQbMDfWZB
-
-    let req = Request::from_parts(parts, body);
-    Ok(next.run(req))
-}
 
 
