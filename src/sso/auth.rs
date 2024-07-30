@@ -1,32 +1,62 @@
+use std::sync::Arc;
+
 use axum::extract::{FromRequestParts, Query, Request};
 use axum::http::StatusCode;
 use axum::middleware::Next;
-use axum::response::IntoResponse;
-use crate::Params;
-use crate::sso::user_detail_dao::query_user_detail;
+use axum::response::{IntoResponse, Response};
 
-pub async fn auth_middleware(req: Request, next: Next) -> Result<impl IntoResponse, StatusCode> {
+use crate::sso::user_detail_dao::query_user_detail;
+use crate::Params;
+
+pub async fn auth_middleware(req: Request, next: Next) -> Result<Response, StatusCode> {
     let (mut parts, body) = req.into_parts();
-    if let Some(satoken) = parts.headers.get("satoken") {
-        if satoken.is_empty() {
-            let params = Query::<Params>::from_request_parts(&mut parts, &())
-                .await
-                .map_err(|e| StatusCode::UNAUTHORIZED)?;
-            if params.satoken.is_empty() {
-                return Err(StatusCode::UNAUTHORIZED);
-            }
-        } else {}
+    let mut satoken: Option<String> = None;
+
+    let header = parts.headers.get("satoken");
+    if let Some(header) = header {
+        if !header.is_empty() {
+            let header = header.to_str().map_err(|e| StatusCode::UNAUTHORIZED)?;
+            satoken = Some(header.into());
+        }
     }
 
-    let params = Query::<Params>::from_request_parts(&mut parts, &())
-        .await
-        .map_err(|e| StatusCode::UNAUTHORIZED)?;
-    if params.satoken.is_empty() {
+    if satoken.is_none() {
+        let params = Query::<Params>::from_request_parts(&mut parts, &())
+            .await
+            .map_err(|e| StatusCode::UNAUTHORIZED)?;
+        if params.satoken.is_empty() {
+            return Err(StatusCode::UNAUTHORIZED);
+        } else {
+            satoken = Some(params.satoken.clone());
+        }
+    }
+
+    if let Some(ref satoken) = satoken {
+        // let satoken = splicing_key_token_value(satoken);
+        let user_detail = query_user_detail(&satoken).await?;
+
+        let mut req = Request::from_parts(parts, body);
+        req.extensions_mut().insert(Arc::new(Some(user_detail)));
+        let response = next.run(req).await;
+        return Ok(response);
+    } else {
         return Err(StatusCode::UNAUTHORIZED);
     }
+}
 
-    let user_detail = query_user_detail(&params.satoken).await?;
+// /**
+//  * 拼接： 在保存 token - id 映射关系时，应该使用的key
+//  *
+//  * @param tokenValue token值
+//  * @return key
+//  */
+// public String splicingKeyTokenValue(String tokenValue) {
+// return getConfigOrGlobal().getTokenName() + ":" + loginType + ":token:" + tokenValue;
+// }
 
-    let req = Request::from_parts(parts, body);
-    Ok(next.run(req))
+fn splicing_key_token_value(satoken: &str) -> String {
+    let mut string = String::new();
+    string += "satoken:login:token:";
+    string += satoken;
+    string
 }

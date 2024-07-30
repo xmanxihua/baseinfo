@@ -19,17 +19,19 @@ lazy_static!(
 );
 
 pub async fn query_user_detail(satoken: &str) -> Result<UserDetail, StatusCode> {
+    let timestamp = Utc::now().timestamp_millis().to_string();
+    let rand_string = get_random_string(32);
     let mut get_data_param = vec![
         ("apiType", "userToken"),
         ("apiValue", satoken),
-        ("timestamp", &Utc::now().timestamp().to_string()),
-        ("nonce", &get_random_string(32)),
+        ("timestamp", &timestamp),
+        ("nonce", &rand_string),
     ];
     let sign = create_sign(&mut get_data_param);
     get_data_param.push(("sign", &sign));
     let re = client
         .get("http://sso.beta.micun.cn/sso/data")
-        .form(&get_data_param)
+        .query(&get_data_param)
         .send()
         .await
         .map_err(|e| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -135,8 +137,8 @@ fn get_md5(s: &str) -> String {
     let md = digest.deref_mut();
     let mut result = String::new();
     for byte0 in md {
-        result.push(hex_digits[*byte0 >> 4 & 0xF]);
-        result.push(hex_digits[*byte0 & 0xF]);
+        result.push(hex_digits[(*byte0 as usize) >> 4 & 0xF] as char);
+        result.push(hex_digits[(*byte0 as usize) & 0xF] as char);
     }
 
     result

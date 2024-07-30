@@ -91,7 +91,7 @@ async fn main() {
             supplier_repo: &supplier_repo,
             supplier_service: &supplier_service,
         })
-        .layer(middleware::from_fn(auth_middleware));
+        .layer(axum::middleware::from_fn(sso::auth::auth_middleware));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
