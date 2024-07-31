@@ -52,30 +52,34 @@ async fn main() {
         .add_directive("sqlx::query=off".parse().unwrap());
 
     let db: &'static DatabaseConnection = get_db().await;
+    let mut db_holder = None;
     unsafe {
-        let holder = Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection);
+        db_holder = Some(Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection));
     }
 
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
+    let mut supplier_account_repo_holder = None;
     unsafe {
-        let holder = Box::from_raw(
+        supplier_account_repo_holder = Some(Box::from_raw(
             supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo,
-        );
+        ));
     }
 
     let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo {
         db,
         supplier_account_repo,
     }));
+    let mut supplier_repo_holder = None;
     unsafe {
-        let holder = Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo);
+        supplier_repo_holder = Some(Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo));
     }
 
     let supplier_service: &'static SupplierService = Box::leak(Box::new(SupplierService {
         supplier_repo: &supplier_repo,
         db,
     }));
+    let mut supplier_service_
     unsafe {
         let holder =
             Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService);
