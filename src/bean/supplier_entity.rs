@@ -2,9 +2,11 @@ use sea_orm::prelude::{DateTime, Decimal, Json};
 use serde::{Deserialize, Serialize};
 use crate::bean::attachment::Attachment;
 use crate::bean::product_suggest_vo::ProductSuggestVo;
+use crate::bean::supplier_account_entity::SupplierAccountEntity;
+use crate::bean::supplier_finance_bank_entity::SupplierFinanceBankEntity;
 use crate::dao::supplier::Model;
 
-#[derive(Debug)]
+#[derive(Debug,Default)]
 pub struct SupplierEntity {
     pub id: Option<i32>,
     pub realm: Option<String>,
@@ -28,7 +30,8 @@ pub struct SupplierEntity {
     pub third_supplier_code: Option<String>,
     pub address: Option<String>,
     pub supplier_certification: Option<SupplierCertification>,
-    pub products: Option<Vec<ProductSuggestVo>>,
+    pub supplier_finance_bank:Option<SupplierFinanceBankEntity>,
+    pub supplier_accounts: Option<Vec<SupplierAccountEntity>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -36,24 +39,25 @@ pub struct SupplierCertification {
     /**
      * 社会统一代码
      */
-    #[serde(rename="usCode")]
+    #[serde(rename="usCode",default)]
     pub us_code: Option<String>,
 
     /**
      * 营业执照
      */
-    #[serde(rename="businessLicense")]
+    #[serde(rename="businessLicense", default)]
     business_license: Option<Attachment>,
 
     /**
      * 其他资质
      */
-    #[serde(rename="otherCertification")]
+    #[serde(rename="otherCertification", default)]
     other_certification: Option<Vec<Attachment>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SupplierExt {
+    #[serde(default)]
     pub remark: Option<String>,
 }
 
@@ -119,7 +123,7 @@ impl TryFrom<Model> for SupplierEntity {
             third_supplier_code: Some(value.third_supplier_code),
             address: Some(value.address),
             supplier_certification: Some(supplier_certification),
-            products: None,
+            ..SupplierEntity::default()
         })
     }
 }

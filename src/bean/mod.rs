@@ -9,3 +9,4 @@ pub mod supplier_param;
 pub mod supplier_account_entity;
 pub mod supplier_account_param;
 pub mod page_request;
+pub mod supplier_finance_bank_entity;

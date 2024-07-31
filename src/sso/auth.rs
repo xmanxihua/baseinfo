@@ -37,7 +37,7 @@ pub async fn auth_middleware(req: Request, next: Next) -> Result<Response, Statu
         let user_detail = query_user_detail(&satoken).await?;
 
         let mut req = Request::from_parts(parts, body);
-        req.extensions_mut().insert(Arc::new(Some(user_detail)));
+        req.extensions_mut().insert(Arc::new(user_detail));
         let response = next.run(req).await;
         return Ok(response);
     } else {

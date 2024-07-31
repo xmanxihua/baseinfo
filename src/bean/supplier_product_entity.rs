@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::utils::option_date_format;
 
-#[derive(Debug,Deserialize,Serialize)]
+#[derive(Debug,Deserialize,Serialize,Default)]
 pub struct SupplierProductEntity {
     pub id: Option<i32>,
     #[serde(rename="supplierCode")]

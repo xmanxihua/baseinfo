@@ -1,10 +1,12 @@
 use axum::extract::{Json, State};
-use sea_orm::DbErr;
+use axum::Extension;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use crate::bean::app_state_dyn::AppStateDyn;
 use crate::bean::json_result::JsonResult;
 use crate::bean::supplier_vo::SupplierVo;
+use crate::sso::bean::UserDetail;
 
 pub struct SupplierController;
 
@@ -16,11 +18,12 @@ pub struct Test {
 impl SupplierController {
     pub async fn submit<'a>(
         State(state): State<AppStateDyn<'a>>,
+        Extension(user): Extension<Arc<UserDetail>>,
         Json(supplier_vo): Json<SupplierVo>,
     ) -> Json<JsonResult<SupplierVo>> {
         let supplier_code = supplier_vo.supplier_code.as_ref().map(|x| x.clone());
 
-        let r = state.supplier_service.submit(supplier_vo).await;
+        let r = state.supplier_service.submit(supplier_vo, user).await;
         match r {
             Ok(id) => {}
             Err(e) => {

@@ -8,25 +8,29 @@ use crate::utils::option_date_format;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SupplierAccountEntity {
     pub id: Option<i32>,
-    #[serde(rename = "supplierCode")]
+    #[serde(rename = "supplierCode", default)]
     pub supplier_code: Option<String>,
-    #[serde(rename = "userCode")]
+    #[serde(rename = "userCode",default)]
     pub user_code: Option<String>,
+    #[serde(default)]
     pub phone: Option<String>,
+    #[serde(default)]
     pub name: Option<String>,
+    #[serde(default)]
     pub comment: Option<String>,
+    #[serde(default)]
     pub ext: Option<SupplierAccountExt>,
-    #[serde(rename = "data_state")]
+    #[serde(rename = "data_state",default)]
     pub data_state: Option<i16>,
-    #[serde(rename = "createBy")]
+    #[serde(rename = "createBy",default)]
     pub create_by: Option<String>,
-    #[serde(rename = "updateBy")]
+    #[serde(rename = "updateBy",default)]
     pub update_by: Option<String>,
-    #[serde(rename = "createTime", with = "option_date_format")]
+    #[serde(rename = "createTime", with = "option_date_format",default)]
     pub create_time: Option<NaiveDateTime>,
-    #[serde(rename = "updateTime", with = "option_date_format")]
+    #[serde(rename = "updateTime", with = "option_date_format",default)]
     pub update_time: Option<NaiveDateTime>,
-    #[serde(rename = "type")]
+    #[serde(rename = "type",default)]
     pub r#type: Option<Vec<i16>>,
 }
 
@@ -56,14 +60,15 @@ impl TryFrom<Model> for SupplierAccountEntity {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SupplierAccountExt {
-    #[serde(rename = "idCardFront")]
+    #[serde(rename = "idCardFront",default)]
     pub id_card_front: Option<Attachment>,
 
-    #[serde(rename = "idCardBack")]
+    #[serde(rename = "idCardBack",default)]
     pub id_card_back: Option<Attachment>,
 
+    #[serde(default)]
     pub photo: Option<Attachment>,
 
-    #[serde(rename = "workCard")]
+    #[serde(rename = "workCard",default)]
     pub work_card: Option<Attachment>,
 }

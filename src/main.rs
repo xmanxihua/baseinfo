@@ -1,31 +1,22 @@
 use std::io::Read;
 use std::ops::{Deref, DerefMut};
-use std::ptr::null;
-use std::str::Chars;
 
-use axum::extract::{FromRequest, FromRequestParts, Query, Request};
-use axum::http::StatusCode;
-use axum::middleware::Next;
+use axum::{Router, routing::get};
+use axum::extract::{FromRequest, FromRequestParts};
 use axum::response::IntoResponse;
 use axum::routing::post;
-use axum::{middleware, routing::get, Router};
-use chrono::Utc;
-use md5::{compute, Digest};
 use rand::{Rng, RngCore};
-use reqwest::{Client, Error, Response};
-use sea_orm::EntityTrait;
 use sea_orm::{ColumnTrait, DatabaseConnection};
 use sea_orm::{Database, PaginatorTrait, QueryFilter};
+use sea_orm::EntityTrait;
 use serde::Deserialize;
 use tracing_subscriber::EnvFilter;
 
 use crate::bean::app_state_dyn::AppStateDyn;
 use crate::controller::supplier_controller::SupplierController;
-use crate::dao::prelude::Supplier;
 use crate::repository::supplier_account_repo::SupplierAccountRepo;
 use crate::repository::supplier_repo::SupplierRepo;
 use crate::service::supplier_service::SupplierService;
-use crate::sso::bean::UserDetailResult;
 
 mod bean;
 mod constants;
@@ -52,38 +43,35 @@ async fn main() {
         .add_directive("sqlx::query=off".parse().unwrap());
 
     let db: &'static DatabaseConnection = get_db().await;
-    let mut db_holder = None;
+    let mut db_holder =
     unsafe {
-        db_holder = Some(Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection));
-    }
+        Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection)
+    };
 
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
-    let mut supplier_account_repo_holder = None;
-    unsafe {
-        supplier_account_repo_holder = Some(Box::from_raw(
-            supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo,
-        ));
-    }
+    let mut supplier_account_repo_holder =
+    unsafe { Box::from_raw(
+            supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo
+        )
+    };
 
     let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo {
         db,
         supplier_account_repo,
     }));
-    let mut supplier_repo_holder = None;
-    unsafe {
-        supplier_repo_holder = Some(Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo));
-    }
+    let mut supplier_repo_holder = unsafe {
+        Box::from_raw(supplier_repo as *const SupplierRepo as *mut SupplierRepo)
+    };
 
     let supplier_service: &'static SupplierService = Box::leak(Box::new(SupplierService {
         supplier_repo: &supplier_repo,
         db,
     }));
-    let mut supplier_service_
+    let mut supplier_service_holder =
     unsafe {
-        let holder =
-            Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService);
-    }
+            Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService)
+    };
 
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))

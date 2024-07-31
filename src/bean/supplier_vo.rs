@@ -3,10 +3,12 @@ use crate::utils::option_date_format;
 use sea_orm::prelude::{DateTime, Decimal, Json};
 use serde::{Deserialize, Serialize};
 use crate::bean::product_suggest_vo::ProductSuggestVo;
+use crate::bean::supplier_account_entity::SupplierAccountEntity;
 use crate::bean::supplier_entity::{SupplierCertification, SupplierEntity, SupplierExt};
+use crate::bean::supplier_finance_bank_entity::SupplierFinanceBankEntity;
 use crate::dao::supplier::Model;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,Default)]
 pub struct SupplierVo {
     pub id: Option<i32>,
     pub realm: Option<String>,
@@ -47,6 +49,11 @@ pub struct SupplierVo {
     pub address: Option<String>,
     #[serde(rename = "supplierCertification")]
     pub supplier_certification: Option<SupplierCertification>,
+    #[serde(rename = "supplierFinanceBank")]
+    pub supplier_finance_bank:Option<SupplierFinanceBankEntity>,
+    #[serde(rename = "supplierAccounts")]
+    pub supplier_accounts: Option<Vec<SupplierAccountEntity>>,
+    #[serde(default)]
     pub products: Option<Vec<ProductSuggestVo>>,
 }
 
@@ -75,7 +82,8 @@ impl Into<SupplierEntity> for SupplierVo {
             third_supplier_code: self.third_supplier_code,
             address: self.address,
             supplier_certification: self.supplier_certification,
-            products: self.products,
+            supplier_finance_bank:self.supplier_finance_bank,
+            supplier_accounts:self.supplier_accounts
         }
     }
 }
@@ -110,6 +118,7 @@ impl TryFrom<Model> for SupplierVo {
             address: Some(value.address),
             supplier_certification: Some(supplier_certifications),
             products: None,
+            ..SupplierVo::default()
         })
     }
 }
