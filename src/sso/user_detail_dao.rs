@@ -30,7 +30,7 @@ pub async fn query_user_detail(satoken: &str) -> Result<UserDetail, StatusCode> 
     let sign = create_sign(&mut get_data_param);
     get_data_param.push(("sign", &sign));
     let re = client
-        .get("http://sso.beta.micun.cn/sso/data")
+        .get("http://sso.beta.micun.cn/sso/getData")
         .query(&get_data_param)
         .send()
         .await
@@ -39,7 +39,7 @@ pub async fn query_user_detail(satoken: &str) -> Result<UserDetail, StatusCode> 
         .json::<UserDetailResult>()
         .await
         .map_err(|e| StatusCode::UNAUTHORIZED)?;
-    if re.code.is_none() || re.code.is_some_and(|x| x != 0) {
+    if re.code.is_none() || re.code.is_some_and(|x| x != 200) {
         return Err(StatusCode::UNAUTHORIZED);
     }
 
@@ -142,4 +142,24 @@ fn get_md5(s: &str) -> String {
     }
 
     result
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    //apiValue=5413f64f-cb55-4d40-8017-cbd1b966e234&sign=571e91c7c08768d17d6df48852b582d1&nonce=9OwmsXTkzqpyreiBCuNof4mc62HiO57s&apiType=userToken&timestamp=1722431999539
+    #[test]
+    fn test_assign() {
+        let mut get_data_param = vec![
+            ("apiType", "userToken"),
+            ("apiValue", "5413f64f-cb55-4d40-8017-cbd1b966e234"),
+            ("timestamp", "1722431999539"),
+            ("nonce", "9OwmsXTkzqpyreiBCuNof4mc62HiO57s"),
+        ];
+        let sign = create_sign(&mut get_data_param);
+        get_data_param.push(("sign", &sign));
+        println!("{}: {:?}", sign, get_data_param);
+        assert_eq!(2 + 2, 4);
+    }
 }

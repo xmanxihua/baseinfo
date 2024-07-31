@@ -35,6 +35,7 @@ mod repository;
 mod service;
 mod sso;
 mod utils;
+mod test;
 
 #[tokio::main]
 async fn main() {
