@@ -68,6 +68,7 @@ async fn main() {
         supplier_repo: &supplier_repo,
         db,
     }));
+
     let mut supplier_service_holder =
     unsafe {
             Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService)

@@ -6,7 +6,7 @@ use crate::bean::supplier_account_entity::SupplierAccountEntity;
 use crate::bean::supplier_finance_bank_entity::SupplierFinanceBankEntity;
 use crate::dao::supplier::Model;
 
-#[derive(Debug,Default)]
+#[derive(Debug,Default,Clone)]
 pub struct SupplierEntity {
     pub id: Option<i32>,
     pub realm: Option<String>,
@@ -34,7 +34,7 @@ pub struct SupplierEntity {
     pub supplier_accounts: Option<Vec<SupplierAccountEntity>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,Clone)]
 pub struct SupplierCertification {
     /**
      * 社会统一代码
@@ -55,7 +55,7 @@ pub struct SupplierCertification {
     other_certification: Option<Vec<Attachment>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,Clone)]
 pub struct SupplierExt {
     #[serde(default)]
     pub remark: Option<String>,

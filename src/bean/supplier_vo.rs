@@ -8,7 +8,7 @@ use crate::bean::supplier_entity::{SupplierCertification, SupplierEntity, Suppli
 use crate::bean::supplier_finance_bank_entity::SupplierFinanceBankEntity;
 use crate::dao::supplier::Model;
 
-#[derive(Debug, Deserialize, Serialize,Default)]
+#[derive(Debug, Deserialize, Serialize,Default,Clone)]
 pub struct SupplierVo {
     pub id: Option<i32>,
     pub realm: Option<String>,

@@ -5,7 +5,7 @@ use crate::bean::attachment::Attachment;
 use crate::dao::supplier_account::Model;
 use crate::utils::option_date_format;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,Clone)]
 pub struct SupplierAccountEntity {
     pub id: Option<i32>,
     #[serde(rename = "supplierCode", default)]
@@ -58,7 +58,7 @@ impl TryFrom<Model> for SupplierAccountEntity {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,Clone)]
 pub struct SupplierAccountExt {
     #[serde(rename = "idCardFront",default)]
     pub id_card_front: Option<Attachment>,
