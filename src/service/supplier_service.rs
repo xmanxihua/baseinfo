@@ -1,21 +1,23 @@
+use std::string::ToString;
+use std::sync::Arc;
+
+use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
+use utils::m_assert;
+use crate::{constants, not_blank, utils};
 use crate::bean::page_request::Page;
 use crate::bean::supplier_entity::SupplierEntity;
 use crate::bean::supplier_param::SupplierParam;
 use crate::bean::supplier_vo::SupplierVo;
+use crate::repository::supplier_finance_bank_repo::SupplierFinanceBankRepo;
 use crate::repository::supplier_repo::SupplierRepo;
-use crate::sso::bean::UserDetail;
-use crate::{constants, utils};
-use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
-use serde::de::IntoDeserializer;
-use std::string::ToString;
-use std::sync::Arc;
-use uuid::Uuid;
 use crate::service::supplier_save_checker;
+use crate::sso::bean::UserDetail;
 
 #[derive(Clone)]
 pub struct SupplierService<'a> {
     pub supplier_repo: &'a SupplierRepo<'a>,
     pub db: &'a DatabaseConnection,
+    pub supplier_finance_bank_repo: &'a SupplierFinanceBankRepo<'a>,
 }
 
 impl<'a> SupplierService<'a> {
@@ -62,9 +64,12 @@ impl<'a> SupplierService<'a> {
                 .is_some_and(|x| !x.trim().is_empty())
             {
                 finance_bank.supplier_code = supplier_entity.supplier_code;
-                supplier_save_checker::finance_bank_check(Some(&finance_bank)).map_err(|e|DbErr::Custom(e.to_string()))?;
+                supplier_save_checker::finance_bank_check(Some(&finance_bank)).map_err(|e| DbErr::Custom(e.to_string()))?;
+                self.supplier_finance_bank_repo.save_or_update(&mut finance_bank).await;
             }
         }
+
+
 
         tr.commit().await?;
         r
@@ -85,9 +90,9 @@ impl<'a> SupplierService<'a> {
     //
     // }
     async fn submit_verify(&self, supplier_entity: &SupplierEntity) -> Result<(), String> {
-        utils::m_assert::not_blank(
+        not_blank!(
             supplier_entity.supplier_name.as_ref(),
-            format_args!("供应商名称不能为空"),
+            "供应商名称不能为空"
         )?;
         let mut supplier_param = SupplierParam {
             supplier_name: supplier_entity.supplier_name.clone(),

@@ -15,6 +15,7 @@ use tracing_subscriber::EnvFilter;
 use crate::bean::app_state_dyn::AppStateDyn;
 use crate::controller::supplier_controller::SupplierController;
 use crate::repository::supplier_account_repo::SupplierAccountRepo;
+use crate::repository::supplier_finance_bank_repo::SupplierFinanceBankRepo;
 use crate::repository::supplier_repo::SupplierRepo;
 use crate::service::supplier_service::SupplierService;
 
@@ -44,16 +45,24 @@ async fn main() {
 
     let db: &'static DatabaseConnection = get_db().await;
     let mut db_holder =
-    unsafe {
-        Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection)
-    };
+        unsafe {
+            Box::from_raw(db as *const DatabaseConnection as *mut DatabaseConnection)
+        };
 
     let supplier_account_repo: &'static SupplierAccountRepo =
         Box::leak(Box::new(SupplierAccountRepo { db }));
     let mut supplier_account_repo_holder =
-    unsafe { Box::from_raw(
-            supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo
-        )
+        unsafe {
+            Box::from_raw(
+                supplier_account_repo as *const SupplierAccountRepo as *mut SupplierAccountRepo
+            )
+        };
+
+    let supplier_finance_bank_repo = Box::leak(Box::new(SupplierFinanceBankRepo {
+        db
+    }));
+    let supplier_bank_repo_holder = unsafe {
+        Box::from_raw(supplier_finance_bank_repo as *const SupplierFinanceBankRepo as *mut SupplierFinanceBankRepo)
     };
 
     let supplier_repo: &'static SupplierRepo = Box::leak(Box::new(SupplierRepo {
@@ -65,14 +74,15 @@ async fn main() {
     };
 
     let supplier_service: &'static SupplierService = Box::leak(Box::new(SupplierService {
-        supplier_repo: &supplier_repo,
+        supplier_repo,
         db,
+        supplier_finance_bank_repo,
     }));
 
     let mut supplier_service_holder =
-    unsafe {
+        unsafe {
             Box::from_raw(supplier_service as *const SupplierService as *mut SupplierService)
-    };
+        };
 
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))

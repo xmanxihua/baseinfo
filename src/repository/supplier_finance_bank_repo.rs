@@ -5,7 +5,7 @@ use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 use crate::dao::supplier_finance_bank::{ActiveModel, Model};
 
 pub struct SupplierFinanceBankRepo<'a> {
-    db: &'a DatabaseConnection,
+    pub db: &'a DatabaseConnection,
 }
 
 impl <'a>SupplierFinanceBankRepo<'a> {

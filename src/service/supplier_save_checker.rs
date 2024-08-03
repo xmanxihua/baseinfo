@@ -1,6 +1,6 @@
 use crate::bean::supplier_entity::SupplierEntity;
 use crate::bean::supplier_finance_bank_entity::SupplierFinanceBankEntity;
-use crate::utils;
+use crate::{not_blank, not_none, utils};
 use crate::utils::m_assert;
 
 // public static void supplierCheck(SupplierEntity entity){
@@ -11,20 +11,20 @@ use crate::utils::m_assert;
 // //        MAssert.notBlank(entity.getSourceSystem(),"供应商来源系统不能为空");
 // }
 pub fn supplier_checker(entity: Option<&SupplierEntity>) -> Result<(), String> {
-    m_assert::not_none(entity, format_args!("瞎搞"))?;
+    not_none!(entity, "瞎搞")?;
     let entity = entity.unwrap();
-    m_assert::not_blank(
+    not_blank!(
         entity.supplier_name.as_ref(),
-        format_args!("供应商名字不能为空"),
+        "供应商名字不能为空"
     )?;
-    m_assert::not_none(entity.supplier_nature, format_args!("供应商性质不能为空"))?;
-    m_assert::not_blank(
+    not_none!(entity.supplier_nature, "供应商性质不能为空")?;
+    not_blank!(
         entity.supplier_id_code.as_ref(),
-        format_args!("供应商证件号不能为空"),
+        "供应商证件号不能为空"
     )?;
-    m_assert::not_blank(
+    not_blank!(
         entity.source_system.as_ref(),
-        format_args!("供应商来源系统不能为空"),
+        "供应商来源系统不能为空"
     )
 }
 
@@ -37,24 +37,24 @@ pub fn supplier_checker(entity: Option<&SupplierEntity>) -> Result<(), String> {
 // MAssert.notBlank(entity.getBankBranchCode(),"支行编码不能为空");
 // }
 pub fn finance_bank_check(entity: Option<&SupplierFinanceBankEntity>) -> Result<(), String> {
-    m_assert::not_none(entity, format_args!("瞎搞"))?;
+    not_none!(entity, "瞎搞")?;
     let entity = entity.unwrap();
-    m_assert::not_blank(
+    not_blank!(
         entity.supplier_code.as_ref(),
-        format_args!("供应商编码不能为空"),
+        "供应商编码不能为空"
     )?;
-    m_assert::not_blank(entity.bank_code.as_ref(), format_args!("银行编码不能为空"))?;
-    m_assert::not_blank(
+    not_blank!(entity.bank_code.as_ref(), "银行编码不能为空")?;
+    not_blank!(
         entity.bank_account.as_ref(),
-        format_args!("银行帐号不能为空"),
+        "银行帐号不能为空"
     )?;
-    m_assert::not_blank(
+    not_blank!(
         entity.bank_account_name.as_ref(),
-        format_args!("银行账户名不能为空"),
+        "银行账户名不能为空"
     )?;
-    m_assert::not_blank(
+    not_blank!(
         entity.bank_branch_code.as_ref(),
-        format_args!("支行编码不能为空"),
+        "支行编码不能为空"
     )
 }
 
